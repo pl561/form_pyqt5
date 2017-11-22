@@ -14,14 +14,14 @@ HOME = os.environ['HOME']
 #     stop = pyqtSignal()
 #     toggle = pyqtSignal()
 
-class SelectiveWidget(QtWidgets.QWidget):
-    def __init__(self, mode="lcd", parent=None):
-        super().__init__(parent=parent)
-        self.mode = mode
-        if self.mode == "lcd":
-            self.widget = QtWidgets.QLCDNumber(parent=parent)
-        elif self.mode == "lbl":
-            self.widget = QtWidgets.QLabel(parent=parent)
+# class SelectiveWidget(QtWidgets.QWidget):
+#     def __init__(self, mode="lcd", parent=None):
+#         super().__init__(parent=parent)
+#         self.mode = mode
+#         if self.mode == "lcd":
+#             self.widget = QtWidgets.QLCDNumber(parent=parent)
+#         elif self.mode == "lbl":
+#             self.widget = QtWidgets.QLabel(parent=parent)
 
 class MyTimer(QtCore.QTimer):
     """customized timer
@@ -67,43 +67,66 @@ class MyTimer(QtCore.QTimer):
         self.is_ticking = False
 
 
+class MyLCDNumber(QtWidgets.QLCDNumber):
+    click_signal = pyqtSignal()
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+
+    def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.LeftButton:
+            self.click_signal.emit()
+        else:
+            super().mousePressEvent(event)
+
+
+
+
 class Pomodoro(QtWidgets.QMainWindow):
     """main window containing the timer widget"""
     def __init__(self, duration, parent=None):
         super().__init__(parent=parent)
         self.title = "Timer"
         self.left, self.top = 10, 10
-        self.width, self.height = 300, 300
+        self.width, self.height = 200, 150
         self.duration = duration
         self.init_ui()
 
     def init_ui(self):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
-
+        self.statusBar().showMessage("Stopped")
         central_widget = QtWidgets.QWidget(parent=self)
         self.setCentralWidget(central_widget)
 
-        dim = QtCore.QRect(0, 0, 200, 100)
-        self.display_widget = QtWidgets.QLCDNumber(parent=central_widget)
+        dim = QtCore.QRect(0, 0, self.width, self.height-50)
+        self.display_widget = MyLCDNumber(parent=central_widget)
         self.display_widget.setGeometry(dim)
         self.display_widget.display(self.duration)
 
         self.timer = MyTimer(self.duration)
         self.timer.tick_signal.connect(self.display_widget.display)
+        self.timer.stop_signal.connect(self.show_stop_message)
         self.timer.start_ticking()
+        self.statusBar().showMessage("Started")
 
-        # self.label = QtWidgets.QLabel(str(self.timer.get_amount()),
-        #                               parent=central_widget)
+        self.display_widget.click_signal.connect(self.update_timer_status)
+
+        # TODO : add qslider, minutes hours conversions
 
 
+    def update_timer_status(self):
+        self.timer.toggle()
+        if self.timer.is_ticking:
+            msg = "started"
+        else:
+            msg = "stopped"
+        self.show_message(msg)
 
+    def show_message(self, msg):
+        self.statusBar().showMessage(msg)
 
-
-    def print_countdown(self, amount):
-        self.label.setText(str(amount))
-        print(amount)
-
+    def show_stop_message(self):
+        self.show_message("Stopped")
 
 
 def main():
