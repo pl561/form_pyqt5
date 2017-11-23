@@ -72,6 +72,12 @@ class MyLCDNumber(QtWidgets.QLCDNumber):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
+    def display_time(self, amount):
+        minutes = str(amount//60).zfill(2)
+        seconds = str(amount%60).zfill(2)
+        content = "{}:{}".format(minutes, seconds)
+        self.display(content)
+
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.LeftButton:
             self.click_signal.emit()
@@ -79,13 +85,11 @@ class MyLCDNumber(QtWidgets.QLCDNumber):
             super().mousePressEvent(event)
 
 
-
-
 class Pomodoro(QtWidgets.QMainWindow):
     """main window containing the timer widget"""
     def __init__(self, duration, parent=None):
         super().__init__(parent=parent)
-        self.title = "Timer"
+        self.title = "Pomodoro Timer"
         self.left, self.top = 10, 10
         self.width, self.height = 200, 150
         self.duration = duration
@@ -98,21 +102,40 @@ class Pomodoro(QtWidgets.QMainWindow):
         central_widget = QtWidgets.QWidget(parent=self)
         self.setCentralWidget(central_widget)
 
-        dim = QtCore.QRect(0, 0, self.width, self.height-50)
+        layout = QtWidgets.QVBoxLayout(central_widget)
+        # layout.setAlignment(QtCore.Qt.AlignTop)
+        # dim = QtCore.QRect(0, 0, self.width, self.height-50)
         self.display_widget = MyLCDNumber(parent=central_widget)
-        self.display_widget.setGeometry(dim)
-        self.display_widget.display(self.duration)
+        # self.display_widget.setGeometry(dim)
+        self.display_widget.display_time(self.duration)
+
+        self.slider = QtWidgets.QSlider(QtCore.Qt.Horizontal,
+                                        parent=central_widget)
+        # self.slider.setGeometry(0, self.height, self.width, 50)
+        self.slider.move(0, self.height)
+        self.slider.setMinimum(1)
+        self.slider.setMaximum(60)
+        self.slider.setValue(25)
+        self.slider.setTickInterval(5)
+        self.slider.setTickPosition(QtWidgets.QSlider.TicksBothSides)
 
         self.timer = MyTimer(self.duration)
-        self.timer.tick_signal.connect(self.display_widget.display)
+        self.timer.tick_signal.connect(self.display_widget.display_time)
         self.timer.stop_signal.connect(self.show_stop_message)
-        self.timer.start_ticking()
+        # self.timer.start_ticking()
+
         self.statusBar().showMessage("Started")
 
+        self.slider.valueChanged.connect(self.update_slider_change)
         self.display_widget.click_signal.connect(self.update_timer_status)
 
-        # TODO : add qslider, minutes hours conversions
+        layout.addWidget(self.display_widget)
+        layout.addWidget(self.slider)
+        # self.setLayout(layout)
 
+    def update_slider_change(self, amount):
+        self.timer.set_amount(amount*60)
+        self.display_widget.display_time(amount*60)
 
     def update_timer_status(self):
         self.timer.toggle()
