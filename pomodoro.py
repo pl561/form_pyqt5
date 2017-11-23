@@ -86,7 +86,8 @@ class MyLCDNumber(QtWidgets.QLCDNumber):
 
 
 class Pomodoro(QtWidgets.QMainWindow):
-    """main window containing the timer widget"""
+    """main window containing the timer widget
+       duration in minutes"""
     def __init__(self, duration, parent=None):
         super().__init__(parent=parent)
         self.title = "Pomodoro Timer"
@@ -116,9 +117,6 @@ class Pomodoro(QtWidgets.QMainWindow):
         self.timer = MyTimer(self.duration)
         self.timer.tick_signal.connect(self.display_widget.display_time)
         self.timer.stop_signal.connect(self.show_stop_message)
-        # self.timer.start_ticking()
-
-        self.statusBar().showMessage("Started")
 
         self.update_slider_change(self.duration)
         self.slider.valueChanged.connect(self.update_slider_change)
@@ -126,7 +124,7 @@ class Pomodoro(QtWidgets.QMainWindow):
 
         layout.addWidget(self.display_widget)
         layout.addWidget(self.slider)
-        # self.setLayout(layout)
+
 
     def update_slider_change(self, amount):
         self.timer.set_amount(amount*60)
