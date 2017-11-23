@@ -104,18 +104,12 @@ class Pomodoro(QtWidgets.QMainWindow):
 
         layout = QtWidgets.QVBoxLayout(central_widget)
         # layout.setAlignment(QtCore.Qt.AlignTop)
-        # dim = QtCore.QRect(0, 0, self.width, self.height-50)
         self.display_widget = MyLCDNumber(parent=central_widget)
-        # self.display_widget.setGeometry(dim)
-        self.display_widget.display_time(self.duration)
-
         self.slider = QtWidgets.QSlider(QtCore.Qt.Horizontal,
                                         parent=central_widget)
-        # self.slider.setGeometry(0, self.height, self.width, 50)
-        self.slider.move(0, self.height)
         self.slider.setMinimum(1)
         self.slider.setMaximum(60)
-        self.slider.setValue(25)
+        self.slider.setValue(self.duration)
         self.slider.setTickInterval(5)
         self.slider.setTickPosition(QtWidgets.QSlider.TicksBothSides)
 
@@ -126,6 +120,7 @@ class Pomodoro(QtWidgets.QMainWindow):
 
         self.statusBar().showMessage("Started")
 
+        self.update_slider_change(self.duration)
         self.slider.valueChanged.connect(self.update_slider_change)
         self.display_widget.click_signal.connect(self.update_timer_status)
 
@@ -154,7 +149,7 @@ class Pomodoro(QtWidgets.QMainWindow):
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
-    ex = Pomodoro(5)
+    ex = Pomodoro(25)
     ex.show()
     sys.exit(app.exec_())
 
