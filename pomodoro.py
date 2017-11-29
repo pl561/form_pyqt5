@@ -57,7 +57,8 @@ class MyTimer(QtCore.QTimer):
 
 
 class MyLCDNumber(QtWidgets.QLCDNumber):
-    click_signal = pyqtSignal()
+    left_clicked = pyqtSignal()
+    right_clicked = pyqtSignal()
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
@@ -69,7 +70,9 @@ class MyLCDNumber(QtWidgets.QLCDNumber):
 
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.LeftButton:
-            self.click_signal.emit()
+            self.left_clicked.emit()
+        elif event.button() == QtCore.Qt.RightButton:
+            self.right_clicked.emit()
         else:
             super().mousePressEvent(event)
 
@@ -113,7 +116,8 @@ class Pomodoro(QtWidgets.QMainWindow):
         self.slider.valueChanged.connect(self.update_slider_change)
 
         # when the LCD widget captures a click, toggle timer and status
-        self.display_widget.click_signal.connect(self.timer.toggle)
+        self.display_widget.left_clicked.connect(self.timer.toggle)
+        self.display_widget.right_clicked.connect(self.reset_timer)
 
         layout.addWidget(self.display_widget)
         layout.addWidget(self.slider)
@@ -121,6 +125,10 @@ class Pomodoro(QtWidgets.QMainWindow):
     def update_slider_change(self, amount):
         self.timer.set_amount(amount*60)
         self.display_widget.display_time(amount*60)
+
+    def reset_timer(self):
+        amount = self.slider.value()
+        self.update_slider_change(amount)
 
     def show_message(self, msg):
         self.statusBar().showMessage(msg)
