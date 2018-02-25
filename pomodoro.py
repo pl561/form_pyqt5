@@ -127,7 +127,7 @@ class Pomodoro(QtWidgets.QMainWindow):
 
         # when the LCD widget captures a click, toggle timer and status
         self.display_widget.left_clicked.connect(self.timer.toggle)
-        self.display_widget.right_clicked.connect(self.reset_timer25)
+        self.display_widget.right_clicked.connect(self.reset_timer_fromfile)
         self.display_widget.middle_clicked.connect(self.reset_timer)
 
         layout.addWidget(self.display_widget)
@@ -141,8 +141,30 @@ class Pomodoro(QtWidgets.QMainWindow):
         amount = self.slider.value()
         self.update_slider_change(amount)
 
-    def reset_timer25(self):
-        self.update_slider_change(25)
+    def reset_timer_fromfile(self):
+        self.update_slider_change(self.readvalue_fromfile())
+
+    def readvalue_fromfile(self):
+        basename = "pomodoro_value"
+        directory = os.path.dirname(os.path.abspath(__file__))
+        configfile_path = os.path.join(directory, basename)
+        with open(configfile_path, "r") as fd:
+            value = fd.read()
+
+        try:
+            value = int(value)
+        except:
+            value = 15
+
+        if value > 99:
+            value = 99
+        elif value < 1:
+            value = 1
+        else:
+            value = 15
+
+        return value
+
 
     def show_message(self, msg):
         self.statusBar().showMessage(msg)
@@ -154,7 +176,7 @@ class Pomodoro(QtWidgets.QMainWindow):
 def main():
     app = QtWidgets.QApplication(sys.argv)
     sound_fname = "/home/lefevre/phd_git/sounds/sms-alert-4-daniel_simon.wav"
-    minutes = 25
+    minutes = 15
     ex = Pomodoro(minutes, sound_fname)
     ex.show()
     sys.exit(app.exec_())
