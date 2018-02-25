@@ -1,3 +1,10 @@
+# configuration file for timer
+pomodoro_value
+
+
+# sounds
+*.wav
+
 # PyCharm idea configuration
 .idea/
 
