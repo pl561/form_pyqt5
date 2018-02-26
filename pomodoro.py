@@ -97,6 +97,14 @@ class Pomodoro(QtWidgets.QMainWindow):
         self.width, self.height = 200, 150
         self.duration = duration
         self.sound_fname = sound_fname
+
+        basename = "pomodoro_value"
+        directory = os.path.dirname(os.path.abspath(__file__))
+        self.configfile_path = os.path.join(directory, basename)
+        if not os.path.exists(self.configfile_path):
+            with open(self.configfile_path, "w") as fd:
+                fd.write("15")
+
         self.init_ui()
 
     def init_ui(self):
@@ -145,10 +153,7 @@ class Pomodoro(QtWidgets.QMainWindow):
         self.update_slider_change(self.readvalue_fromfile())
 
     def readvalue_fromfile(self):
-        basename = "pomodoro_value"
-        directory = os.path.dirname(os.path.abspath(__file__))
-        configfile_path = os.path.join(directory, basename)
-        with open(configfile_path, "r") as fd:
+        with open(self.configfile_path, "r") as fd:
             value = fd.read()
 
         try:
