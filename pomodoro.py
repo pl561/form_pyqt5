@@ -56,6 +56,31 @@ class MyTimer(QtCore.QTimer):
         self.is_ticking = False
 
 
+class ToggleButton(QtWidgets.QPushButton):
+    toggle_signal = pyqtSignal()
+    def __init__(self, symbols=['>>', '<<'], parent=None):
+        """first symbol describes toggle is off, when clicked, toggle is on
+        and replaces symbol"""
+        super().__init__(parent=parent)
+        self.is_on = False
+        self.symbols = {
+            False: symbols[0],
+            True: symbols[1]
+        }
+        self.setText(self.symbols[0])
+
+    def toggle_symbol(self):
+        self.is_on = not self.is_on
+        self.setText(self.symbols[self.is_on])
+
+    def mousePressEvent(self, event):
+        events = [QtCore.Qt.LeftButton, QtCore.Qt.RightButton]
+        if event.button() in events:
+            self.toggle_symbol()
+            self.toggle_signal.emit()
+
+
+
 class CounterButton(QtWidgets.QPushButton):
     def __init__(self, counter=0, parent=None):
         super().__init__(parent=parent)
@@ -129,7 +154,7 @@ class Pomodoro(QtWidgets.QMainWindow):
         central_widget = QtWidgets.QWidget(parent=self)
         self.setCentralWidget(central_widget)
 
-        layout = QtWidgets.QVBoxLayout(central_widget)
+        self.main_layout = QtWidgets.QVBoxLayout(central_widget)
         # layout.setAlignment(QtCore.Qt.AlignTop)
         self.display_widget = MyLCDNumber(parent=central_widget)
         self.display_widget.setMinimumHeight(70)
@@ -157,10 +182,19 @@ class Pomodoro(QtWidgets.QMainWindow):
         self.display_widget.middle_clicked.connect(self.reset_timer)
 
         self.btn_counter = CounterButton()
+        self.btn_open_editor = ToggleButton()
+        self.btn_open_editor.toggle_signal.connect(self.open_editor)
+        hl = QtWidgets.QHBoxLayout()
+        hl.addWidget(self.btn_counter)
+        hl.addWidget(self.btn_open_editor)
+        self.editor = QtWidgets.QTextEdit()
+        self.editor.setMinimumHeight(200)
 
-        layout.addWidget(self.display_widget)
-        layout.addWidget(self.slider)
-        layout.addWidget(self.btn_counter)
+        self.main_layout.addWidget(self.display_widget)
+        self.main_layout.addWidget(self.slider)
+        # layout.addWidget(self.btn_counter)
+        self.main_layout.addLayout(hl)
+        self.main_layout.addWidget(self.editor)
 
     def update_slider_change(self, amount):
         self.timer.set_amount(amount*60)
@@ -190,6 +224,17 @@ class Pomodoro(QtWidgets.QMainWindow):
             value = 15
 
         return value
+
+    def open_editor(self):
+        editor_h = self.editor.size().height()
+        current_h = self.size().height()
+        if self.btn_open_editor.is_on:
+            self.editor.hide()
+            self.setFixedHeight(current_h-editor_h)
+        else:
+            self.editor.show()
+            self.setFixedHeight(current_h+editor_h)
+
 
     def show_message(self, msg):
         self.statusBar().showMessage(msg)
