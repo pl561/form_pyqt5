@@ -56,6 +56,21 @@ class MyTimer(QtCore.QTimer):
         self.is_ticking = False
 
 
+class CounterButton(QtWidgets.QPushButton):
+    def __init__(self, counter=0, parent=None):
+        super().__init__(parent=parent)
+        self.counter = counter
+        self.setText(str(counter))
+
+    def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.LeftButton:
+            self.counter += 1
+        elif event.button() == QtCore.Qt.RightButton:
+            self.counter -= 1
+        else:
+            super().mousePressEvent(event)
+        self.setText(str(self.counter))
+
 class MyLCDNumber(QtWidgets.QLCDNumber):
     left_clicked = pyqtSignal()
     right_clicked = pyqtSignal()
@@ -117,6 +132,9 @@ class Pomodoro(QtWidgets.QMainWindow):
         layout = QtWidgets.QVBoxLayout(central_widget)
         # layout.setAlignment(QtCore.Qt.AlignTop)
         self.display_widget = MyLCDNumber(parent=central_widget)
+        self.display_widget.setMinimumHeight(70)
+        self.display_widget.setMinimumWidth(160)
+
         self.slider = QtWidgets.QSlider(QtCore.Qt.Horizontal,
                                         parent=central_widget)
         self.slider.setMinimum(0)
@@ -138,8 +156,11 @@ class Pomodoro(QtWidgets.QMainWindow):
         self.display_widget.right_clicked.connect(self.reset_timer_fromfile)
         self.display_widget.middle_clicked.connect(self.reset_timer)
 
+        self.btn_counter = CounterButton()
+
         layout.addWidget(self.display_widget)
         layout.addWidget(self.slider)
+        layout.addWidget(self.btn_counter)
 
     def update_slider_change(self, amount):
         self.timer.set_amount(amount*60)
@@ -169,7 +190,6 @@ class Pomodoro(QtWidgets.QMainWindow):
             value = 15
 
         return value
-
 
     def show_message(self, msg):
         self.statusBar().showMessage(msg)
