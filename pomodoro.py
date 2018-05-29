@@ -3,6 +3,7 @@
 
 import sys
 import os
+import datetime
 
 from PyQt5 import QtWidgets, Qt, QtGui, QtCore
 from PyQt5.QtMultimedia import QSound
@@ -127,6 +128,40 @@ class MyLCDNumber(QtWidgets.QLCDNumber):
     #     # else:
     #     super().mouseDoubleClickEvent(event)
 
+
+class MyQTextEdit(QtWidgets.QTextEdit):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        basename = "notes.txt"
+        directory = os.path.dirname(os.path.abspath(__file__))
+        self.content_fname = os.path.join(directory, basename)
+        self.current_content = ""
+        if os.path.exists(self.content_fname):
+            self.read_content()
+        self.init_ui()
+
+    def init_ui(self):
+        self.n = 1000 * 2
+        self.ticker = QtCore.QTimer()
+        self.ticker.timeout.connect(self.save_content)
+        self.ticker.setInterval(self.n)
+        self.ticker.start(self.n)
+
+    def save_content(self):
+        new_content = str(self.toPlainText())
+        if new_content != self.current_content:
+            print(str(datetime.datetime.now())+" write")
+            self.current_content = new_content
+            with open(self.content_fname, "w") as fd:
+                fd.write(new_content)
+
+    def read_content(self):
+        with open(self.content_fname, "r") as fd:
+            content = fd.read()
+        self.current_content = content
+        self.setPlainText(content)
+
+
 class Pomodoro(QtWidgets.QMainWindow):
     """main window containing the timer widget
        duration in minutes"""
@@ -187,7 +222,7 @@ class Pomodoro(QtWidgets.QMainWindow):
         hl = QtWidgets.QHBoxLayout()
         hl.addWidget(self.btn_counter)
         hl.addWidget(self.btn_open_editor)
-        self.editor = QtWidgets.QTextEdit()
+        self.editor = MyQTextEdit()
         self.editor.setMinimumHeight(200)
 
         self.main_layout.addWidget(self.display_widget)
