@@ -141,6 +141,9 @@ class MyQTextEdit(QtWidgets.QTextEdit):
         self.init_ui()
 
     def init_ui(self):
+        self.init_timer()
+
+    def init_timer(self):
         self.n = 1000 * 2
         self.ticker = QtCore.QTimer()
         self.ticker.timeout.connect(self.save_content)
