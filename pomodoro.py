@@ -168,13 +168,21 @@ class MyQTextEdit(QtWidgets.QTextEdit):
 class Pomodoro(QtWidgets.QMainWindow):
     """main window containing the timer widget
        duration in minutes"""
-    def __init__(self, duration, sound_fname="", parent=None):
+    def __init__(self, duration=15, sound_fname="", parent=None):
         super().__init__(parent=parent)
         self.title = "Pomodoro Timer"
         self.left, self.top = 10, 10
         self.width, self.height = 200, 150
         self.duration = duration
-        self.sound_fname = sound_fname
+
+        if len(sound_fname) == 0:
+            sound_path = "phd_git/sounds/sms-alert-4-daniel_simon.wav"
+            self.sound_fname = os.path.join(HOME, sound_path)
+        else:
+            self.sound_fname = sound_fname
+
+        # https://images.vexels.com/media/users/3/132347/isolated/preview/be0aa6f53b4ac58a4a3612d6dc7a7854-stopwatch-timer-icon-by-vexels.png
+        self.setWindowIcon(QtGui.QIcon("timer.png"))
 
         basename = "pomodoro_value"
         directory = os.path.dirname(os.path.abspath(__file__))

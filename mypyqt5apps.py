@@ -18,9 +18,7 @@ def main():
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
 
-    sound_fname = "/home/lefevre/phd_git/sounds/sms-alert-4-daniel_simon.wav"
-    minutes = 15
-    w = Pomodoro(minutes, sound_fname)
+    w = Pomodoro()
 
     tray = MySystemTray()
     menu = tray.get_menu()
