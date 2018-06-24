@@ -25,6 +25,7 @@ class MyTextEditor(QWidget):
         self.main_layout = QVBoxLayout()
         self.tabs = QTabWidget()
         self.tabs.setTabsClosable(True)
+        self.tabs.tabCloseRequested.connect(self.close_tab)
         self.t1 = QWidget()
         self.t2 = QWidget()
 
@@ -44,6 +45,9 @@ class MyTextEditor(QWidget):
         self.main_layout.addWidget(self.tabs)
 
         self.setLayout(self.main_layout)
+
+    def close_tab(self, index):
+        self.tabs.removeTab(index)
 
     def add_tab(self):
         self.nb_tabs += 1
