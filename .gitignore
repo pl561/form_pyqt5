@@ -1,6 +1,7 @@
 # configuration file for timer
 pomodoro_value
-
+notes/
+notes.bak/
 
 # sounds
 *.wav
