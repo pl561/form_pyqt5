@@ -18,13 +18,19 @@ class MyQTextEdit(QtWidgets.QTextEdit):
     # todo : if file has changed on disk, what do we do ?
     def __init__(self, basename, directory="notes", parent=None):
         super().__init__(parent=parent)
-        # basename = "notes.txt"
+
         basepath = os.path.dirname(os.path.abspath(__file__))
+        notes_dir = os.path.join(basepath, directory)
+        if not os.path.exists(notes_dir):
+            os.mkdir(notes_dir)
+
         self.content_fname = os.path.join(basepath, directory, basename)
         print(self.content_fname)
         self.current_content = ""
         if os.path.exists(self.content_fname):
             self.read_content()
+        else:
+            self.save_content(force_write=True)
         self.init_ui()
 
     def init_ui(self):
@@ -37,9 +43,9 @@ class MyQTextEdit(QtWidgets.QTextEdit):
         self.ticker.setInterval(self.n)
         self.ticker.start(self.n)
 
-    def save_content(self):
+    def save_content(self, force_write=False):
         new_content = str(self.toPlainText())
-        if new_content != self.current_content:
+        if new_content != self.current_content or force_write:
             print(str(datetime.datetime.now())+" write")
             self.current_content = new_content
             with open(self.content_fname, "w") as fd:
