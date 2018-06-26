@@ -8,8 +8,10 @@ import datetime
 from PyQt5 import QtWidgets, Qt, QtGui, QtCore
 from PyQt5.QtMultimedia import QSound
 from PyQt5.QtCore import pyqtSignal
+from editor import MyTextEditor
 
 HOME = os.environ['HOME']
+
 
 class MyTimer(QtCore.QTimer):
     """customized timer
@@ -18,6 +20,7 @@ class MyTimer(QtCore.QTimer):
     start_signal = pyqtSignal(str)
     tick_signal = pyqtSignal(int)
     stop_signal = pyqtSignal(str)
+
     def __init__(self, amount, sound_fname="", parent=None):
         super().__init__(parent=parent)
         self.setInterval(1000)
@@ -59,6 +62,7 @@ class MyTimer(QtCore.QTimer):
 
 class ToggleButton(QtWidgets.QPushButton):
     toggle_signal = pyqtSignal()
+
     def __init__(self, symbols=['>>', '<<'], parent=None):
         """first symbol describes toggle is off, when clicked, toggle is on
         and replaces symbol"""
@@ -66,7 +70,7 @@ class ToggleButton(QtWidgets.QPushButton):
         self.is_on = False
         self.symbols = {
             False: symbols[0],
-            True: symbols[1]
+            True : symbols[1]
         }
         self.setText(self.symbols[0])
 
@@ -79,7 +83,6 @@ class ToggleButton(QtWidgets.QPushButton):
         if event.button() in events:
             self.toggle_symbol()
             self.toggle_signal.emit()
-
 
 
 class CounterButton(QtWidgets.QPushButton):
@@ -97,16 +100,18 @@ class CounterButton(QtWidgets.QPushButton):
             super().mousePressEvent(event)
         self.setText(str(self.counter))
 
+
 class MyLCDNumber(QtWidgets.QLCDNumber):
     left_clicked = pyqtSignal()
     right_clicked = pyqtSignal()
     middle_clicked = pyqtSignal()
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
     def display_time(self, amount):
-        minutes = str(amount//60).zfill(2)
-        seconds = str(amount%60).zfill(2)
+        minutes = str(amount // 60).zfill(2)
+        seconds = str(amount % 60).zfill(2)
         content = "{}:{}".format(minutes, seconds)
         self.display(content)
 
@@ -129,63 +134,31 @@ class MyLCDNumber(QtWidgets.QLCDNumber):
     #     super().mouseDoubleClickEvent(event)
 
 
-class MyQTextEdit(QtWidgets.QTextEdit):
-    def __init__(self, parent=None):
-        super().__init__(parent=parent)
-        basename = "notes.txt"
-        directory = os.path.dirname(os.path.abspath(__file__))
-        self.content_fname = os.path.join(directory, basename)
-        self.current_content = ""
-        if os.path.exists(self.content_fname):
-            self.read_content()
-        self.init_ui()
-
-    def init_ui(self):
-        self.init_timer()
-
-    def init_timer(self):
-        self.n = 1000 * 2
-        self.ticker = QtCore.QTimer()
-        self.ticker.timeout.connect(self.save_content)
-        self.ticker.setInterval(self.n)
-        self.ticker.start(self.n)
-
-    def save_content(self):
-        new_content = str(self.toPlainText())
-        if new_content != self.current_content:
-            print(str(datetime.datetime.now())+" write")
-            self.current_content = new_content
-            with open(self.content_fname, "w") as fd:
-                fd.write(new_content)
-
-    def read_content(self):
-        with open(self.content_fname, "r") as fd:
-            content = fd.read()
-        self.current_content = content
-        self.setPlainText(content)
-
-
 class Pomodoro(QtWidgets.QMainWindow):
     """main window containing the timer widget
        duration in minutes"""
+
     def __init__(self, duration=15, sound_fname="", parent=None):
         super().__init__(parent=parent)
+        directory = os.path.dirname(os.path.abspath(__file__))
         self.title = "Pomodoro Timer"
         self.left, self.top = 10, 10
         self.width, self.height = 200, 150
         self.duration = duration
 
         if len(sound_fname) == 0:
-            sound_path = "phd_git/sounds/sms-alert-4-daniel_simon.wav"
-            self.sound_fname = os.path.join(HOME, sound_path)
+            sound_path = "sounds/sms-alert-4-daniel_simon.wav"
+            self.sound_fname = os.path.join(directory, sound_path)
         else:
             self.sound_fname = sound_fname
 
         # https://images.vexels.com/media/users/3/132347/isolated/preview/be0aa6f53b4ac58a4a3612d6dc7a7854-stopwatch-timer-icon-by-vexels.png
-        self.setWindowIcon(QtGui.QIcon("timer.png"))
+
+        timer_icon = os.path.join(directory, "icons", "timer.png")
+        self.setWindowIcon(QtGui.QIcon(timer_icon))
 
         basename = "pomodoro_value"
-        directory = os.path.dirname(os.path.abspath(__file__))
+
         self.configfile_path = os.path.join(directory, basename)
         if not os.path.exists(self.configfile_path):
             with open(self.configfile_path, "w") as fd:
@@ -233,7 +206,7 @@ class Pomodoro(QtWidgets.QMainWindow):
         hl = QtWidgets.QHBoxLayout()
         hl.addWidget(self.btn_counter)
         hl.addWidget(self.btn_open_editor)
-        self.editor = MyQTextEdit()
+        self.editor = MyTextEditor()
         self.editor.setMinimumHeight(200)
 
         self.main_layout.addWidget(self.display_widget)
@@ -243,8 +216,8 @@ class Pomodoro(QtWidgets.QMainWindow):
         self.main_layout.addWidget(self.editor)
 
     def update_slider_change(self, amount):
-        self.timer.set_amount(amount*60)
-        self.display_widget.display_time(amount*60)
+        self.timer.set_amount(amount * 60)
+        self.display_widget.display_time(amount * 60)
 
     def reset_timer(self):
         amount = self.slider.value()
@@ -276,11 +249,10 @@ class Pomodoro(QtWidgets.QMainWindow):
         current_h = self.size().height()
         if self.btn_open_editor.is_on:
             self.editor.hide()
-            self.setFixedHeight(current_h-editor_h)
+            self.setFixedHeight(current_h - editor_h)
         else:
             self.editor.show()
-            self.setFixedHeight(current_h+editor_h)
-
+            self.setFixedHeight(current_h + editor_h)
 
     def show_message(self, msg):
         self.statusBar().showMessage(msg)

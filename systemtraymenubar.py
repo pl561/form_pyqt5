@@ -17,7 +17,9 @@ HOME = os.environ['HOME']
 class MySystemTray(QtWidgets.QSystemTrayIcon):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.icon = QtGui.QIcon("icon2.png")
+        directory = os.path.dirname(os.path.abspath(__file__))
+        basename = "icon2.png"
+        self.icon = QtGui.QIcon(os.path.join(directory, "icons", basename))
         self.setIcon(self.icon)
         self.setVisible(True)
 
